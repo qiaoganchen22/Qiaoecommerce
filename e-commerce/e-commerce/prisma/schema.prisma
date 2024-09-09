@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model cart {
+  c_id       Int          @id @default(autoincrement())
+  c_u_id     Int
+  users      users        @relation(fields: [c_u_id], references: [u_id], onDelete: NoAction, onUpdate: NoAction)
+  cart_items cart_items[]
+}
+
+model cart_items {
+  ci_id    Int      @id @default(autoincrement())
+  ci_p_id  Int
+  ci_count Int
+  ci_c_id  Int
+  cart     cart     @relation(fields: [ci_c_id], references: [c_id], onDelete: NoAction, onUpdate: NoAction)
+  products products @relation(fields: [ci_p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model contact_me {
+  c_id      Int       @id @default(autoincrement())
+  c_email   String    @db.VarChar(500)
+  c_message String    @db.VarChar(5000)
+  c_date    DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model items {
+  i_id     Int      @id @default(autoincrement())
+  i_o_id   Int
+  i_p_id   Int
+  i_count  Int
+  orders   orders   @relation(fields: [i_o_id], references: [o_id], onDelete: NoAction, onUpdate: NoAction)
+  products products @relation(fields: [i_p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model messages {
+  m_id      Int       @id @default(autoincrement())
+  m_date    DateTime? @default(now()) @db.Timestamp(6)
+  m_sender  String    @db.VarChar(500)
+  m_message String    @db.VarChar(5000)
+  m_deleted Boolean?  @default(false)
+  m_seen    Boolean?  @default(false)
+  m_title   String    @db.VarChar(500)
+  m_u_id    Int
+  users     users     @relation(fields: [m_u_id], references: [u_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model orders {
+  o_id      Int       @id @default(autoincrement())
+  o_u_id    Int
+  o_total   Decimal   @db.Decimal
+  o_date    DateTime? @default(now()) @db.Timestamp(6)
+  o_status  status
+  o_card    String    @db.VarChar(16)
+  o_address String    @db.VarChar(2000)
+  items     items[]
+  users     users     @relation(fields: [o_u_id], references: [u_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model products {
+  p_id          Int          @id @default(autoincrement())
+  p_name        String       @db.VarChar(500)
+  p_price       Decimal      @db.Decimal
+  p_description String       @db.VarChar(5000)
+  p_amount      Int          @default(0)
+  p_image       String       @db.VarChar(5000)
+  cart_items    cart_items[]
+  items         items[]
+  rating        rating[]
+  reviews       reviews[]
+}
+
+model rating {
+  r_id      Int      @id @default(autoincrement())
+  r_u_id    Int
+  r_p_id    Int
+  r_deleted Boolean? @default(false)
+  r_rating  Int
+  products  products @relation(fields: [r_p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction)
+  users     users    @relation(fields: [r_u_id], references: [u_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model reviews {
+  r_id      Int       @id @default(autoincrement())
+  r_p_id    Int
+  r_u_id    Int
+  r_review  String    @db.VarChar(5000)
+  r_deleted Boolean?  @default(false)
+  r_date    DateTime? @default(now()) @db.Timestamp(6)
+  r_edited  Boolean?  @default(false)
+  products  products  @relation(fields: [r_p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction)
+  users     users     @relation(fields: [r_u_id], references: [u_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  u_id        Int        @id @default(autoincrement())
+  u_username  String     @unique @db.VarChar(20)
+  u_firstname String     @db.VarChar(50)
+  u_lastname  String     @db.VarChar(50)
+  u_password  String     @db.VarChar(5000)
+  u_admin     Boolean?   @default(false)
+  u_deleted   Boolean?   @default(false)
+  cart        cart[]
+  messages    messages[]
+  orders      orders[]
+  rating      rating[]
+  reviews     reviews[]
+}
+
+enum status {
+  cancel
+  complete
+}
