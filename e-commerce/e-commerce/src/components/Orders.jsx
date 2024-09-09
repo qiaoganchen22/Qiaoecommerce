@@ -28,7 +28,7 @@ export default function Orders() {
               return (
                 <div key={order.o_id}>
                   <p className="mb-0">
-                    <b>Total: </b>${order.o_total}
+                    <b>Total: </b>${parseFloat(order.o_total.toFixed(2))}
                   </p>
                   <p className="mb-0">
                     <b>Date: </b> {order.o_date.split("T")[0]}
